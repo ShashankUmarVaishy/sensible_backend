@@ -16,7 +16,7 @@ The main API routes are defined in `routes/userRoutes.js`, which handles all use
 
 ## API Routes Documentation
 
-All routes are prefixed with the base URL of your server. The following routes are available:
+All routes are prefixed with the base URL of your server backendURL+'/api/auth' . The following routes are available:
 
 ### Authentication Routes
 
