@@ -1,5 +1,5 @@
 //bring inprisma anc cookie
-
+const jwt = require("jsonwebtoken");
 const prisma = require("../prisma/index");
 const bcrypt = require("bcryptjs"); //to hash passwords
 const cookieToken = require("../utils/cookieToken");
@@ -26,8 +26,7 @@ exports.signUp = async (req, res, next) => {
   }
 };
 exports.login = async (req, res, next) => {
-  console.log("Login request received");
-  console.log(req.body);
+  
   try {
     const { email, password } = req.body;
     //check
@@ -40,13 +39,13 @@ exports.login = async (req, res, next) => {
         email,
       },
     });
-    console.log("User found:", user);
+    
     if (!user) {
       throw new Error("User not found");
     }
     //check password
     const isPasswordValid = bcrypt.compareSync(password, user.password);
-    console.log("Password valid:", isPasswordValid);
+    
     if (!isPasswordValid) {
       return res.status(403).json({ message: "Invalid credentials (password) " });
     }
@@ -64,8 +63,10 @@ exports.getUserinfo = async (req, res, next) => {
     if (!userToken) {
       throw new Error("Please provide necessary details");
     }
+    
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const userId = decoded?.id;
+    
+    const userId = decoded?.userId;
     if (!userId) {
       throw new Error("Invalid user token");
     }
@@ -97,7 +98,8 @@ exports.setToken = async (req, res, next) => {
     if (!userToken || !token) {
       throw new Error("Please provide user details");
     }
-    const userId = jwt.verify(userToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+    const userId = decoded?.userId;
     if (!userId) {
       throw new Error("Invalid user ");
     }
@@ -118,9 +120,37 @@ exports.setToken = async (req, res, next) => {
         token: token,
       },
     });
-    res.send(200).json({
+    res.status(200).json({
       success: true,
       message: "Token updated successfully",
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+exports.getToken = async (req, res, next) => {
+  try {
+    const { userToken} = req.body;
+    if (!userToken ) {
+      throw new Error("Please provide user details");
+    }
+    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+    const userId = decoded?.userId;
+    if (!userId) {
+      throw new Error("Invalid user ");
+    }
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    res.status(200).json({
+      success: true,
+      token: user.token,
+      message: "Token retrieved successfully",
     });
   } catch (err) {
     throw new Error(err);
@@ -132,7 +162,8 @@ exports.removeToken = async (req, res, next) => {
     if (!userToken) {
       throw new Error("Please provide user details");
     }
-    const userId = jwt.verify(userToken, process.env.JWT_SECRET);
+    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+    const userId = decoded?.userId;
     if (!userId) {
       throw new Error("Invalid user ");
     }
@@ -153,7 +184,7 @@ exports.removeToken = async (req, res, next) => {
         token: null,
       },
     });
-    res.send(200).json({
+    res.status(200).json({
       success: true,
       message: "Token removed successfully",
     });
@@ -169,7 +200,7 @@ exports.addPatient = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const caretakerId = decoded?.id;
+    const caretakerId = decoded?.userId;
     if (!caretakerId) {
       throw new Error("Invalid user token");
     }
@@ -209,7 +240,7 @@ exports.addCaretaker = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const patientId = decoded?.id;
+    const patientId = decoded?.userId;
     if (!patientId) {
       throw new Error("Invalid user token");
     }
@@ -249,7 +280,7 @@ exports.getPatients = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const caretakerId = decoded?.id;
+    const caretakerId = decoded?.userId;
     if (!caretakerId) {
       throw new Error("Invalid user token");
     }
@@ -273,7 +304,7 @@ exports.getCaretakers = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const patientId = decoded?.id;
+    const patientId = decoded?.userId;
     if (!patientId) {
       throw new Error("Invalid user token");
     }
@@ -296,7 +327,7 @@ exports.removePatient = async (req, res, next) => {
       throw new Error("Please provide user details");
     }
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const caretakerId = decoded?.id;
+    const caretakerId = decoded?.userId;
     if (!caretakerId) {
       throw new Error("Invalid user token");
     }
@@ -337,7 +368,7 @@ exports.removeCaretaker = async (req, res, next) => {
       throw new Error("Please provide user details");
     }
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const patientId = decoded?.id;
+    const patientId = decoded?.userId;
     if (!patientId) {
       throw new Error("Invalid user token");
     }

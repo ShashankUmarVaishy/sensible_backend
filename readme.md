@@ -75,7 +75,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
 ### Token Management Routes
 
 #### 4. Set Token
-- **Endpoint:** `POST /settoken`
+- **Endpoint:** `PUT /settoken`
 - **Description:** Updates user's token (likely for push notifications)
 - **Request Body:**
   ```json
@@ -91,9 +91,25 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
     "message": "Token updated successfully"
   }
   ```
+#### 4. Get Token
+- **Endpoint:** `POST /gettoken`
+- **Description:** Updates user's token (likely for push notifications)
+- **Request Body:**
+  ```json
+  {
+    "userToken": "string",
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "token": token
+  }
+  ```
 
 #### 5. Remove Token
-- **Endpoint:** `POST /removetoken`
+- **Endpoint:** `DELETE /removetoken`
 - **Description:** Removes user's token
 - **Request Body:**
   ```json
@@ -210,7 +226,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   ```
 
 #### 10. Remove Patient
-- **Endpoint:** `POST /removepatient`
+- **Endpoint:** `DELETE /removepatient`
 - **Description:** Removes a patient from a caretaker's care list
 - **Request Body:**
   ```json
@@ -229,7 +245,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
 - **Notes:** The userToken should belong to the caretaker
 
 #### 11. Remove Caretaker
-- **Endpoint:** `POST /removecaretaker`
+- **Endpoint:** `DELETE /removecaretaker`
 - **Description:** Removes a caretaker from a patient's care team
 - **Request Body:**
   ```json
