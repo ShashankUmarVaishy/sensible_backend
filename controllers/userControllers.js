@@ -4,7 +4,7 @@ const prisma = require("../prisma/index");
 const bcrypt = require("bcryptjs"); //to hash passwords
 const cookieToken = require("../utils/cookieToken");
 
-//user sign UP
+
 
 exports.signUp = async (req, res, next) => {
   try {
