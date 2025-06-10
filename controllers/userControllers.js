@@ -56,6 +56,35 @@ exports.login = async (req, res, next) => {
     throw new Error(err);
   }
 };
+exports.getUserinfoByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    //check
+    if (!userId) {
+      throw new Error("Invalid user Id");
+    }
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    //send user details
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        token: user.token,
+      },
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 exports.getUserinfo = async (req, res, next) => {
   try {
     const { userToken } = req.body;

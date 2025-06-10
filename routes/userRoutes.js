@@ -1,10 +1,11 @@
 const express = require('express');
 const router=   express.Router();
-const {signUp,login,getUserinfo,setToken,getToken,removeToken,addPatient,addCaretaker,getPatients,getCaretakers,removePatient,removeCaretaker} =require('../controllers/userControllers');
+const {signUp,login,getUserinfo,getUserinfoByUserId,setToken,getToken,removeToken,addPatient,addCaretaker,getPatients,getCaretakers,removePatient,removeCaretaker} =require('../controllers/userControllers');
 
 router.route('/signup').post(signUp)
 router.route('/login').post(login)
 router.route('/userinfo').get(getUserinfo)
+router.route('/userinfoById').get(getUserinfoByUserId)
 router.route('/settoken').put(setToken)
 router.route('/gettoken').get(getToken)
 router.route('/removetoken').delete(removeToken)
