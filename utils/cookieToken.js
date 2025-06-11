@@ -6,7 +6,12 @@ const cookieToken= (user , res )=>{
         httpOnly: true //now we can manipulate this cookie only through this server/ so server only cookie
     }
     user.password=undefined; //restricts passwords from user
-
+    const data={
+        user,
+        userToken,
+        success:true
+    }
+    
     //now just set the cookie
     res.status(200).json({
         success:true,

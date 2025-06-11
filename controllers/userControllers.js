@@ -28,6 +28,8 @@ exports.signUp = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   
   try {
+    console.log("Login request received");
+    console.log("Request body:", req.body);
     const { email, password } = req.body;
     //check
     if (!email || !password) {
@@ -87,12 +89,14 @@ exports.getUserinfoByUserId = async (req, res, next) => {
 };
 exports.getUserinfo = async (req, res, next) => {
   try {
-    const { userToken } = req.body;
-    //check
-    if (!userToken) {
-      throw new Error("Please provide necessary details");
-    }
-    
+   const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  console.log("Authorization header:", authHeader);
+  const userToken = authHeader.split(' ')[1];
+    console.log("User token:", userToken);
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
     
     const userId = decoded?.userId;

@@ -8,15 +8,17 @@ The main API routes are defined in `routes/userRoutes.js`, which handles all use
 
 ## Technologies Used
 
-- **Express.js** - Web framework
-- **Prisma** - Database ORM
+- **Express.js v5.1.0** - Web framework
+- **Prisma v6.9.0** - Database ORM with MongoDB
 - **JWT (jsonwebtoken)** - Authentication tokens
 - **bcryptjs** - Password hashing
 - **cookie-parser** - Cookie handling
+- **dotenv** - Environment variable management
+- **nodemon** - Development server with auto-restart
 
 ## API Routes Documentation
 
-All routes are prefixed with the base URL of your server backendURL+'/api/auth' . The following routes are available:
+All routes are prefixed with the base URL of your server `backendURL + '/api/auth'`. The following routes are available:
 
 ### Authentication Routes
 
@@ -72,9 +74,31 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   }
   ```
 
+#### 4. Get User Info by User ID
+- **Endpoint:** `GET /userinfoById`
+- **Description:** Retrieves user information using user ID
+- **Request Body:**
+  ```json
+  {
+    "userId": "string"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "user": {
+      "id": "string",
+      "name": "string", 
+      "email": "string",
+      "token": "string"
+    }
+  }
+  ```
+
 ### Token Management Routes
 
-#### 4. Set Token
+#### 5. Set Token
 - **Endpoint:** `PUT /settoken`
 - **Description:** Updates user's token (likely for push notifications)
 - **Request Body:**
@@ -91,24 +115,25 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
     "message": "Token updated successfully"
   }
   ```
-#### 4. Get Token
-- **Endpoint:** `POST /gettoken`
-- **Description:** Updates user's token (likely for push notifications)
+#### 6. Get Token
+- **Endpoint:** `GET /gettoken`
+- **Description:** Retrieves user's token (likely for push notifications)
 - **Request Body:**
   ```json
   {
-    "userToken": "string",
+    "userToken": "string"
   }
   ```
 - **Response:**
   ```json
   {
     "success": true,
-    "token": token
+    "token": "string",
+    "message": "Token retrieved successfully"
   }
   ```
 
-#### 5. Remove Token
+#### 7. Remove Token
 - **Endpoint:** `DELETE /removetoken`
 - **Description:** Removes user's token
 - **Request Body:**
@@ -127,7 +152,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
 
 ### Patient-Caretaker Relationship Routes
 
-#### 6. Add Patient
+#### 8. Add Patient
 - **Endpoint:** `POST /addpatient`
 - **Description:** Allows a caretaker to add a patient to their care list
 - **Request Body:**
@@ -149,7 +174,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   ```
 - **Notes:** The userToken should belong to the caretaker
 
-#### 7. Add Caretaker
+#### 8. Add Caretaker
 - **Endpoint:** `POST /addcaretaker`
 - **Description:** Allows a patient to add a caretaker to their care team
 - **Request Body:**
@@ -171,7 +196,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   ```
 - **Notes:** The userToken should belong to the patient
 
-#### 8. Get Patients
+#### 9. Get Patients
 - **Endpoint:** `GET /getpatients`
 - **Description:** Retrieves all patients associated with a caretaker
 - **Request Body:**
@@ -198,7 +223,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   }
   ```
 
-#### 9. Get Caretakers
+#### 10. Get Caretakers
 - **Endpoint:** `GET /getcaretakers`
 - **Description:** Retrieves all caretakers associated with a patient
 - **Request Body:**
@@ -225,7 +250,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   }
   ```
 
-#### 10. Remove Patient
+#### 11. Remove Patient
 - **Endpoint:** `DELETE /removepatient`
 - **Description:** Removes a patient from a caretaker's care list
 - **Request Body:**
@@ -244,7 +269,7 @@ All routes are prefixed with the base URL of your server backendURL+'/api/auth' 
   ```
 - **Notes:** The userToken should belong to the caretaker
 
-#### 11. Remove Caretaker
+#### 12. Remove Caretaker
 - **Endpoint:** `DELETE /removecaretaker`
 - **Description:** Removes a caretaker from a patient's care team
 - **Request Body:**
