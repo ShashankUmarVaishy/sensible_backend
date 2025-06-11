@@ -103,6 +103,7 @@ exports.getUserinfo = async (req, res, next) => {
     if (!userId) {
       throw new Error("Invalid user token");
     }
+    console.log("Decoded user ID:", userId);
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
