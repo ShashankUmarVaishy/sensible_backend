@@ -26,7 +26,6 @@ exports.signUp = async (req, res, next) => {
   }
 };
 exports.login = async (req, res, next) => {
-  
   try {
     console.log("Login request received");
     console.log("Request body:", req.body);
@@ -41,17 +40,19 @@ exports.login = async (req, res, next) => {
         email,
       },
     });
-    
+
     if (!user) {
       throw new Error("User not found");
     }
     //check password
     const isPasswordValid = bcrypt.compareSync(password, user.password);
-    
+
     if (!isPasswordValid) {
-      return res.status(403).json({ message: "Invalid credentials (password) " });
+      return res
+        .status(403)
+        .json({ message: "Invalid credentials (password) " });
     }
-    
+
     //send user a token
     cookieToken(user, res);
   } catch (err) {
@@ -89,16 +90,16 @@ exports.getUserinfoByUserId = async (req, res, next) => {
 };
 exports.getUserinfo = async (req, res, next) => {
   try {
-   const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-  console.log("Authorization header:", authHeader);
-  const userToken = authHeader.split(' ')[1];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    console.log("Authorization header:", authHeader);
+    const userToken = authHeader.split(" ")[1];
     console.log("User token:", userToken);
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    
+
     const userId = decoded?.userId;
     if (!userId) {
       throw new Error("Invalid user token");
@@ -164,8 +165,8 @@ exports.setToken = async (req, res, next) => {
 };
 exports.getToken = async (req, res, next) => {
   try {
-    const { userToken} = req.body;
-    if (!userToken ) {
+    const { userToken } = req.body;
+    if (!userToken) {
       throw new Error("Please provide user details");
     }
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
@@ -308,11 +309,14 @@ exports.addCaretaker = async (req, res, next) => {
 };
 exports.getPatients = async (req, res, next) => {
   try {
-    const { userToken } = req.body;
-    if (!userToken) {
-      throw new Error("Please provide user details");
-    }
+    const authHeader = req.headers.authorization;
 
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    console.log("Authorization header:", authHeader);
+    const userToken = authHeader.split(" ")[1];
+    console.log("User token:", userToken);
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
     const caretakerId = decoded?.userId;
     if (!caretakerId) {
@@ -385,12 +389,10 @@ exports.removePatient = async (req, res, next) => {
     if (relation.count === 0) {
       throw new Error("No relation found to remove");
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `Patient ${patient.name} removed successfully`,
-      });
+    res.status(200).json({
+      success: true,
+      message: `Patient ${patient.name} removed successfully`,
+    });
   } catch (error) {
     res.send(500).json({ success: false, message: error.message });
   }
@@ -426,12 +428,10 @@ exports.removeCaretaker = async (req, res, next) => {
     if (relation.count === 0) {
       throw new Error("No relation found to remove");
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `Caretaker ${caretaker.name} removed successfully`,
-      });
+    res.status(200).json({
+      success: true,
+      message: `Caretaker ${caretaker.name} removed successfully`,
+    });
   } catch (error) {
     res.send(500).json({ success: false, message: error.message });
   }
