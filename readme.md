@@ -19,34 +19,6 @@ The API is divided into two main route groups:
 - **dotenv** - Environment variable management
 - **nodemon** - Development server with auto-restart
 
-## Database Schema
-
-### User Model
-```prisma
-model User {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  email      String         @unique
-  password   String
-  name       String
-  token      String?        // FCM token for push notifications
-  isPatient  Boolean        @default(false)
-  patients   UserRelation[] @relation("CaretakerLink")
-  caretakers UserRelation[] @relation("PatientLink")
-}
-```
-
-### UserRelation Model
-```prisma
-model UserRelation {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  patientId   String @db.ObjectId
-  caretakerId String @db.ObjectId
-  patient     User   @relation("PatientLink", fields: [patientId], references: [id])
-  caretaker   User   @relation("CaretakerLink", fields: [caretakerId], references: [id])
-  
-  @@unique([patientId, caretakerId])
-}
-```
 
 ## API Routes Documentation
 
@@ -471,16 +443,7 @@ The application uses Firebase Admin SDK for push notifications:
    - Group notifications (patient to caretakers)
    - Broadcast notifications (admin to all users)
 
-## Environment Variables
 
-Required environment variables in `.env`:
-
-```env
-DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/database
-PORT=3000
-JWT_SECRET=your_secure_jwt_secret
-SERVICE_ACCOUNT_PATH=./config/service_account_file.json
-```
 
 ## Database Relations
 
@@ -504,7 +467,6 @@ The application manages user relationships through the `UserRelation` model:
    ```
 
 2. **Configure environment variables:**
-   - Copy `.env.example` to `.env`
    - Fill in your database connection and secrets
 
 3. **Setup Firebase:**
