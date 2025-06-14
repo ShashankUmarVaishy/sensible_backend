@@ -4,12 +4,35 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const admin = require("firebase-admin");
 
-const serviceAccount = require('../config/service_account_file.json'); // Update path if needed
+// const serviceAccount = require('../config/service_account_file.json'); // Update path if needed
 
-// Initialize Firebase Admin
-if (!admin.apps.length) {
+// // Initialize Firebase Admin
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//   });
+// }
+let adminConfig;
+
+if (process.env.FIREBASE_CREDENTIAL_JSON) {
+  try {
+    // In production: credentials provided via environment variable (as JSON string)
+    adminConfig = JSON.parse(process.env.FIREBASE_CREDENTIAL_JSON);
+  } catch (err) {
+    console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
+  }
+} else {
+  try {
+    // In development: load from local file (gitignored)
+    adminConfig = require("../config/service_account_file.json");
+  } catch (err) {
+    console.warn("Local service account file not found. Skipping Firebase init.");
+  }
+}
+
+if (adminConfig && !admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(adminConfig),
   });
 }
 exports.setToken = async (req, res) => {
