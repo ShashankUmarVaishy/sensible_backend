@@ -4,7 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const admin = require("firebase-admin");
 
-const serviceAccount = require(process.env.SERVICE_ACCOUNT_PATH); // Update path if needed
+const serviceAccount = require('../config/service_account_file.json'); // Update path if needed
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
