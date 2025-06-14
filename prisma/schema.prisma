@@ -30,4 +30,6 @@ model UserRelation {
   caretakerId String @db.ObjectId
   patient     User   @relation("PatientLink", fields: [patientId], references: [id])
   caretaker   User   @relation("CaretakerLink", fields: [caretakerId], references: [id])
+  
+  @@unique([patientId, caretakerId])
 }

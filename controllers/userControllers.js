@@ -127,106 +127,7 @@ exports.getUserinfo = async (req, res, next) => {
     throw new Error(err);
   }
 };
-exports.setToken = async (req, res, next) => {
-  try {
-    const { userToken, token } = req.body;
-    if (!userToken || !token) {
-      throw new Error("Please provide user details");
-    }
-    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const userId = decoded?.userId;
-    if (!userId) {
-      throw new Error("Invalid user ");
-    }
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    //update user token
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        token: token,
-      },
-    });
-    res.status(200).json({
-      success: true,
-      message: "Token updated successfully",
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-exports.getToken = async (req, res, next) => {
-  try {
-    const { userToken } = req.body;
-    if (!userToken) {
-      throw new Error("Please provide user details");
-    }
-    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const userId = decoded?.userId;
-    if (!userId) {
-      throw new Error("Invalid user ");
-    }
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    res.status(200).json({
-      success: true,
-      token: user.token,
-      message: "Token retrieved successfully",
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-exports.removeToken = async (req, res, next) => {
-  try {
-    const { userToken } = req.body;
-    if (!userToken) {
-      throw new Error("Please provide user details");
-    }
-    const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-    const userId = decoded?.userId;
-    if (!userId) {
-      throw new Error("Invalid user ");
-    }
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    //update user token
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        token: null,
-      },
-    });
-    res.status(200).json({
-      success: true,
-      message: "Token removed successfully",
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
+
 exports.addPatient = async (req, res, next) => {
   try {
     const { userToken, patientId } = req.body;
@@ -251,7 +152,7 @@ exports.addPatient = async (req, res, next) => {
     }
     await prisma.user.update({
       where: { id: patientId },
-      data: { isPatient: true },
+     
     });
 
     // Create UserRelation
@@ -336,11 +237,14 @@ exports.getPatients = async (req, res, next) => {
 };
 exports.getCaretakers = async (req, res, next) => {
   try {
-    const { userToken } = req.body;
-    if (!userToken) {
-      throw new Error("Please provide user details");
-    }
+     const authHeader = req.headers.authorization;
 
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    console.log("Authorization header:", authHeader);
+    const userToken = authHeader.split(" ")[1];
+    console.log("User token:", userToken);
     const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
     const patientId = decoded?.userId;
     if (!patientId) {
@@ -394,7 +298,7 @@ exports.removePatient = async (req, res, next) => {
       message: `Patient ${patient.name} removed successfully`,
     });
   } catch (error) {
-    res.send(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 exports.removeCaretaker = async (req, res, next) => {
@@ -433,6 +337,6 @@ exports.removeCaretaker = async (req, res, next) => {
       message: `Caretaker ${caretaker.name} removed successfully`,
     });
   } catch (error) {
-    res.send(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
