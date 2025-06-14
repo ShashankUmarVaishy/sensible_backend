@@ -17,16 +17,11 @@ let adminConfig;
 if (process.env.FIREBASE_CREDENTIAL_JSON) {
   try {
     // In production: credentials provided via environment variable (as JSON string)
-    adminConfig = JSON.parse(process.env.FIREBASE_CREDENTIAL_JSON);
+    console.log("Using FIREBASE_CREDENTIAL_JSON");
+    console.log(JSON.stringify(process.env.FIREBASE_CREDENTIAL_JSON));
+    adminConfig = JSON.stringify(process.env.FIREBASE_CREDENTIAL_JSON);
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
-  }
-} else {
-  try {
-    // In development: load from local file (gitignored)
-    adminConfig = require("../config/service_account_file.json");
-  } catch (err) {
-    console.warn("Local service account file not found. Skipping Firebase init.");
   }
 }
 
