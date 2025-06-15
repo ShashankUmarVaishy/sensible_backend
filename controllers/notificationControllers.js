@@ -25,6 +25,8 @@ if (process.env.FIREBASE_CREDENTIAL_JSON) {
     const decoded = Buffer.from(process.env.FIREBASE_CREDENTIAL_BASE64, 'base64').toString();
     
     serviceAccount = JSON.parse(decoded);
+    console.log(serviceAccount.private_key);
+    console.log("Firebase admin initialized successfully : ", serviceAccount);
     
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
