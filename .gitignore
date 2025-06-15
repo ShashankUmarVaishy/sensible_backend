@@ -3,3 +3,7 @@ node_modules
 .env
 
 /generated/prisma
+/config/service_account_file.json
+./config/service_account_file.json
+config/service_account_file.json
+.config/service_account_file.json
