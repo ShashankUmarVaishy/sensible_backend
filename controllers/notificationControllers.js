@@ -17,10 +17,15 @@ let adminConfig, serviceAccount;
 if (process.env.FIREBASE_CREDENTIAL_JSON) {
   try {
     // In production: credentials provided via environment variable (as JSON string)
-     serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
-    console.log("Firebase admin initialized successfully : ", serviceAccount);
+    //  serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
+    // console.log("Firebase admin initialized successfully : ", serviceAccount);
     // adminConfig = JSON.stringify(serviceAccount);
     // console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
+    
+    const decoded = Buffer.from(process.env.FIREBASE_CREDENTIAL_BASE64, 'base64').toString();
+    
+    serviceAccount = JSON.parse(decoded);
+    
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
   }
