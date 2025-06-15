@@ -12,23 +12,28 @@ const admin = require("firebase-admin");
 //     credential: admin.credential.cert(serviceAccount),
 //   });
 // }
-let adminConfig;
+let adminConfig, serviceAccount;
 
 if (process.env.FIREBASE_CREDENTIAL_JSON) {
   try {
     // In production: credentials provided via environment variable (as JSON string)
-    console.log("Using FIREBASE_CREDENTIAL_JSON");
-    console.log(JSON.stringify(process.env.FIREBASE_CREDENTIAL_JSON));
-    adminConfig = JSON.stringify(process.env.FIREBASE_CREDENTIAL_JSON);
+     serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
+    console.log("Firebase admin initialized successfully : ", serviceAccount);
+    // adminConfig = JSON.stringify(serviceAccount);
+    // console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
   }
 }
 
-if (adminConfig && !admin.apps.length) {
+if (serviceAccount && !admin.apps.length) {
+  console.log("making admin initialize app ");
+  
   admin.initializeApp({
-    credential: admin.credential.cert(adminConfig),
+    credential: admin.credential.cert(serviceAccount),
+    // credential: admin.credential.cert(adminConfig),
   });
+  console.log("credential part done")
 }
 exports.setToken = async (req, res) => {
   try {
