@@ -22,6 +22,11 @@ app.use('/api/notification',notificationRouter)
 app.get('/',(req,res)=>{
     res.send('This is Sensible Server!');
 })
+app.get("/time", (req, res) => {
+  const serverTime = new Date().toISOString();
+  console.log("Server Time:", serverTime);
+  res.send(`Server Time: ${serverTime}`);
+});
 
 app.listen(port,()=>{
     console.log(`Sensible server is running on port ${port}`);
