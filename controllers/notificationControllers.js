@@ -14,13 +14,13 @@ const { JWT } = require('google-auth-library');
 // }
 let adminConfig, serviceAccount;
 
-if (process.env.FIREBASE_CREDENTIAL_JSON) {
+// In production: credentials provided via environment variable (as JSON string)
+//  serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
+// console.log("Firebase admin initialized successfully : ", serviceAccount);
+// adminConfig = JSON.stringify(serviceAccount);
+// console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
+const func = async()=>{
   try {
-    // In production: credentials provided via environment variable (as JSON string)
-    //  serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
-    // console.log("Firebase admin initialized successfully : ", serviceAccount);
-    // adminConfig = JSON.stringify(serviceAccount);
-    // console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
 
     const decoded = Buffer.from(
       process.env.FIREBASE_CREDENTIAL_BASE64,
@@ -55,6 +55,9 @@ if (process.env.FIREBASE_CREDENTIAL_JSON) {
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
   }
+}
+if (process.env.FIREBASE_CREDENTIAL_JSON) {
+  func();
 }
 
 if (serviceAccount && !admin.apps.length) {
