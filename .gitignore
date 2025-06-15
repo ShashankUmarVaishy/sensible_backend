@@ -3,6 +3,6 @@ node_modules
 .env
 
 /generated/prisma
-serviceAccountKey.json
-/serviceAccountKey.json
-config/service_account_file.json
+# serviceAccountKey.json
+# /serviceAccountKey.json
+# config/service_account_file.json
