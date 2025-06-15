@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const admin = require("firebase-admin");
-
+const { JWT } = require('google-auth-library');
 // const serviceAccount = require('../config/service_account_file.json'); // Update path if needed
 
 // // Initialize Firebase Admin
@@ -21,14 +21,37 @@ if (process.env.FIREBASE_CREDENTIAL_JSON) {
     // console.log("Firebase admin initialized successfully : ", serviceAccount);
     // adminConfig = JSON.stringify(serviceAccount);
     // console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
-    
-    const decoded = Buffer.from(process.env.FIREBASE_CREDENTIAL_BASE64, 'base64').toString();
-    
-    serviceAccount = JSON.parse(decoded);
-    console.log("Private key preview:", serviceAccount.private_key?.slice(0, 40));
-console.log("Private key newline count:", (serviceAccount.private_key?.match(/\n/g) || []).length);
 
+    const decoded = Buffer.from(
+      process.env.FIREBASE_CREDENTIAL_BASE64,
+      "base64"
+    ).toString('utf8');
+
+    serviceAccount = JSON.parse(decoded);
+     try {
+    const client = new JWT({
+      email: serviceAccount.client_email,
+      key: serviceAccount.private_key,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
+
+    const accessToken = await client.getAccessToken();
+    console.log("✅ Key is valid! Token obtained");
+    console.log("Token snippet:", accessToken.token.substring(0, 20) + "...");
     
+    return true;
+  } catch (error) {
+    console.error("❌ Key validation failed:", error.message);
+    
+    // Signature-specific debug
+    if (error.message.includes("invalid_grant") || error.message.includes("JWT")) {
+      console.log("\n🔍 Signature issue detected. Check:");
+      console.log("- System time:", new Date().toISOString());
+      console.log("- Key revocation status: https://console.cloud.google.com/iam-admin/serviceaccounts");
+    }
+    
+    return false;
+  }
   } catch (err) {
     console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
   }
@@ -36,12 +59,12 @@ console.log("Private key newline count:", (serviceAccount.private_key?.match(/\n
 
 if (serviceAccount && !admin.apps.length) {
   console.log("making admin initialize app ");
-  
+
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     // credential: admin.credential.cert(adminConfig),
   });
-  console.log("credential part done")
+  console.log("credential part done");
 }
 exports.setToken = async (req, res) => {
   try {
@@ -79,13 +102,11 @@ exports.getToken = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        token: user.token,
-        message: "Token retrieved successfully",
-      });
+    res.status(200).json({
+      success: true,
+      token: user.token,
+      message: "Token retrieved successfully",
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -124,7 +145,7 @@ exports.sendNotificationToUser = async (req, res, next) => {
     if (!user) throw new Error("User not found");
     const fcmToken = user.token;
     if (!fcmToken) throw new Error("User has no FCM token");
-    
+
     const result = await sendNotificationToUserHandler(fcmToken, title, body);
     return res.status(200).json(result);
   } catch (err) {
