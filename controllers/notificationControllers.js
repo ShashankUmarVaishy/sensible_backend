@@ -3,69 +3,15 @@ const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const admin = require("firebase-admin");
-const { JWT } = require('google-auth-library');
-// const serviceAccount = require('../config/service_account_file.json'); // Update path if needed
-
-// // Initialize Firebase Admin
-// if (!admin.apps.length) {
-//   admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//   });
-// }
-let adminConfig, serviceAccount;
-
-// In production: credentials provided via environment variable (as JSON string)
-//  serviceAccount= require(process.env.FIREBASE_CREDENTIAL_JSON);
-// console.log("Firebase admin initialized successfully : ", serviceAccount);
-// adminConfig = JSON.stringify(serviceAccount);
-// console.log("Firebase adminoconfig initialized successfully : ", adminConfig);
-const func = async()=>{
-  try {
-
-    const decoded = Buffer.from(
-      process.env.FIREBASE_CREDENTIAL_BASE64,
-      "base64"
-    ).toString('utf8');
-
-    serviceAccount = JSON.parse(decoded);
-     try {
-    const client = new JWT({
-      email: serviceAccount.client_email,
-      key: serviceAccount.private_key,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
-
-    const accessToken = await client.getAccessToken();
-    console.log("✅ Key is valid! Token obtained");
-    console.log("Token snippet:", accessToken.token.substring(0, 20) + "...");
-    
-    return true;
-  } catch (error) {
-    console.error("❌ Key validation failed:", error.message);
-    
-    // Signature-specific debug
-    if (error.message.includes("invalid_grant") || error.message.includes("JWT")) {
-      console.log("\n🔍 Signature issue detected. Check:");
-      console.log("- System time:", new Date().toISOString());
-      console.log("- Key revocation status: https://console.cloud.google.com/iam-admin/serviceaccounts");
-    }
-    
-    return false;
-  }
-  } catch (err) {
-    console.error("Failed to parse FIREBASE_CREDENTIAL_JSON:", err);
-  }
-}
-if (process.env.FIREBASE_CREDENTIAL_JSON) {
-  func();
-}
+const { Expo } = require('expo-server-sdk');
+const expo = new Expo();
+const serviceAccount= require("../config/firebase_service_account_key.json");
 
 if (serviceAccount && !admin.apps.length) {
   console.log("making admin initialize app ");
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    // credential: admin.credential.cert(adminConfig),
   });
   console.log("credential part done");
 }
@@ -128,6 +74,7 @@ exports.removeToken = async (req, res) => {
     if (!user) throw new Error("User not found");
 
     await prisma.user.update({ where: { id: userId }, data: { token: null } });
+    console.log("Token removed successfully");
     res
       .status(200)
       .json({ success: true, message: "Token removed successfully" });
@@ -146,22 +93,53 @@ exports.sendNotificationToUser = async (req, res, next) => {
     if (!userId) throw new Error("Invalid user");
     const user = await prisma.user.findUnique({ where: { id: recieverId } });
     if (!user) throw new Error("User not found");
-    const fcmToken = user.token;
+    const fcmToken = user.token?.replace(' ', '');
     if (!fcmToken) throw new Error("User has no FCM token");
+    console.log("Sending notification to user |", fcmToken,"|end");
+    // const response=  await sendNotificationToUserHandler(fcmToken, title, body);
+     if (!Expo.isExpoPushToken(fcmToken)) {
+    console.error(`Push token ${fcmToken} is not a valid Expo token`);
+    return;
+  }
 
-    const result = await sendNotificationToUserHandler(fcmToken, title, body);
-    return res.status(200).json(result);
-  } catch (err) {
+  const messages = [{
+    to: fcmToken,
+    sound: 'default',
+    title,
+    body,
+    data: { customData: 'value' },
+  }];
+
+  try {
+    const ticketChunk = await expo.sendPushNotificationsAsync(messages);
+    console.log('Ticket:', ticketChunk);
+    //also trying the handker
+    const anotherResponse= await sendNotificationToUserHandler(fcmToken, title, body);
+    console.log('another response:', anotherResponse);
+    return res.send(ticketChunk);
+  } 
+  catch (err) {
+    //catch of notification block
+    console.error('Notification error:', err);
+  }
+    
+  } 
+  catch (err) {
+    //catchof overall block
     return res.status(500).json({ error: err.message });
   }
 };
 const sendNotificationToUserHandler = async (fcmToken, title, body) => {
+  console.log('in handler function ')
   try {
     const message = {
       token: fcmToken,
       notification: { title, body },
     };
+    console.log('message body made now sending it ')
     const response = await admin.messaging().send(message);
+    console.log("res arrived from admin.messaging")
+    console.log(response);
     return { success: true, response };
   } catch (error) {
     return { success: false, error: error.message };

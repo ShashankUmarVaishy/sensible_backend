@@ -24,11 +24,10 @@ app.get('/',(req,res)=>{
 })
 app.get("/time", (req, res) => {
   const serverTime = new Date().toISOString();
-  console.log("Server Time:", serverTime);
+  ("Server Time:", serverTime);
   res.send(`Server Time: ${serverTime}`);
 });
 
 app.listen(port,()=>{
     console.log(`Sensible server is running on port ${port}`);
-    
 })

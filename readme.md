@@ -1,4 +1,4 @@
-# Sensible Server API
+nodemon# Sensible Server API
 
 This is a Node.js Express server application that provides user authentication, patient-caretaker relationship management, and push notification functionality. The server uses Prisma as an ORM with MongoDB, JWT-based authentication, and Firebase Cloud Messaging for push notifications.
 
@@ -12,13 +12,15 @@ The API is divided into two main route groups:
 
 - **Express.js v5.1.0** - Web framework
 - **Prisma v6.9.0** - Database ORM with MongoDB
-- **JWT (jsonwebtoken)** - Authentication tokens
-- **bcryptjs** - Password hashing
-- **Firebase Admin SDK** - Push notifications via FCM
-- **cookie-parser** - Cookie handling
-- **dotenv** - Environment variable management
-- **nodemon** - Development server with auto-restart
-
+- **JWT (jsonwebtoken v9.0.2)** - Authentication tokens
+- **bcryptjs v3.0.2** - Password hashing
+- **Firebase Admin SDK v13.4.0** - Push notifications via FCM
+- **Firebase v11.9.1** - Firebase client SDK
+- **cookie-parser v1.4.7** - Cookie handling
+- **dotenv v16.5.0** - Environment variable management
+- **nodemon v3.1.10** - Development server with auto-restart
+- **expo-server-sdk v3.15.0** - Expo push notifications support
+- **google-auth-library v10.1.0** - Google authentication utilities
 
 ## API Routes Documentation
 
@@ -123,11 +125,77 @@ The API is divided into two main route groups:
   }
   ```
 
+#### 5. Update Profile
+- **Endpoint:** `PUT /updateprofile`
+- **Description:** Updates user profile information (age and phone number)
+- **Request Body:**
+  ```json
+  {
+    "userToken": "jwt_token",
+    "age": "number",
+    "phoneNumber": "string"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Profile updated successfully"
+  }
+  ```
+- **Notes:** Updates the user's age and phone number fields
+
 ### Patient-Caretaker Relationship Routes
 
-#### 5. Add Patient
+#### 6. Add Patient by Email
+- **Endpoint:** `POST /addpatientbyemail`
+- **Description:** Allows a caretaker to add a patient to their care list using patient's email
+- **Request Body:**
+  ```json
+  {
+    "userToken": "caretaker_jwt_token",
+    "patientEmail": "patient_email@example.com"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "patient added successfully"
+  }
+  ```
+- **Notes:** 
+  - Sets the patient's `isPatient` flag to `true`
+  - Creates unique relationship (prevents duplicates)
+
+#### 7. Add Caretaker by Email
+- **Endpoint:** `POST /addcaretakerbyemail`
+- **Description:** Allows a patient to add a caretaker to their care team using caretaker's email
+- **Request Body:**
+  ```json
+  {
+    "userToken": "patient_jwt_token",
+    "caretakerEmail": "caretaker_email@example.com"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "relation": {
+      "id": "relation_id",
+      "caretakerId": "string",
+      "patientId": "string"
+    }
+  }
+  ```
+- **Notes:** 
+  - Sets the patient's `isPatient` flag to `true`
+  - Creates unique relationship (prevents duplicates)
+
+#### 8. Add Patient
 - **Endpoint:** `POST /addpatient`
-- **Description:** Allows a caretaker to add a patient to their care list
+- **Description:** Allows a caretaker to add a patient to their care list using patient's ID
 - **Request Body:**
   ```json
   {
@@ -150,9 +218,9 @@ The API is divided into two main route groups:
   - Sets the patient's `isPatient` flag to `true`
   - Creates unique relationship (prevents duplicates)
 
-#### 6. Add Caretaker
+#### 9. Add Caretaker
 - **Endpoint:** `POST /addcaretaker`
-- **Description:** Allows a patient to add a caretaker to their care team
+- **Description:** Allows a patient to add a caretaker to their care team using caretaker's ID
 - **Request Body:**
   ```json
   {
@@ -175,7 +243,7 @@ The API is divided into two main route groups:
   - Sets the patient's `isPatient` flag to `true`
   - Creates unique relationship (prevents duplicates)
 
-#### 7. Get Patients
+#### 10. Get Patients
 - **Endpoint:** `GET /getpatients`
 - **Description:** Retrieves all patients associated with a caretaker
 - **Headers:**
@@ -203,7 +271,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 8. Get Caretakers
+#### 11. Get Caretakers
 - **Endpoint:** `GET /getcaretakers`
 - **Description:** Retrieves all caretakers associated with a patient
 - **Headers:**
@@ -231,7 +299,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 9. Remove Patient
+#### 12. Remove Patient
 - **Endpoint:** `DELETE /removepatient`
 - **Description:** Removes a patient from a caretaker's care list
 - **Request Body:**
@@ -249,7 +317,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 10. Remove Caretaker
+#### 13. Remove Caretaker
 - **Endpoint:** `DELETE /removecaretaker`
 - **Description:** Removes a caretaker from a patient's care team
 - **Request Body:**
@@ -272,7 +340,7 @@ The API is divided into two main route groups:
 ### Push Notification Routes
 **Base URL:** `{serverURL}/api/notification`
 
-#### 11. Set FCM Token
+#### 14. Set FCM Token
 - **Endpoint:** `PUT /token`
 - **Description:** Updates user's FCM token for push notifications
 - **Request Body:**
@@ -290,7 +358,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 12. Get FCM Token
+#### 15. Get FCM Token
 - **Endpoint:** `GET /token`
 - **Description:** Retrieves user's FCM token
 - **Headers:**
@@ -306,7 +374,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 13. Remove FCM Token
+#### 16. Remove FCM Token
 - **Endpoint:** `DELETE /token`
 - **Description:** Removes user's FCM token (for logout/unsubscribe)
 - **Request Body:**
@@ -323,7 +391,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 14. Send Notification to User
+#### 17. Send Notification to User
 - **Endpoint:** `POST /sendtouser`
 - **Description:** Sends push notification to a specific user
 - **Request Body:**
@@ -349,7 +417,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 15. Send Notification to Patient's Caretakers
+#### 18. Send Notification to Patient's Caretakers
 - **Endpoint:** `POST /sendtogroupfrompatients`
 - **Description:** Sends push notification to all caretakers of a patient
 - **Request Body:**
@@ -375,7 +443,7 @@ The API is divided into two main route groups:
   }
   ```
 
-#### 16. Send Notification to All Users
+#### 19. Send Notification to All Users
 - **Endpoint:** `POST /sendtoallusers`
 - **Description:** Sends push notification to all users with FCM tokens (admin broadcast)
 - **Request Body:**
@@ -443,7 +511,25 @@ The application uses Firebase Admin SDK for push notifications:
    - Group notifications (patient to caretakers)
    - Broadcast notifications (admin to all users)
 
+## Database Schema
 
+The application uses MongoDB with Prisma ORM and includes the following models:
+
+### User Model
+- **id:** Unique identifier (ObjectId)
+- **email:** Unique email address
+- **password:** Hashed password using bcrypt
+- **name:** User's full name
+- **token:** FCM token for push notifications (optional)
+- **age:** User's age (optional, default: 0)
+- **phoneNumber:** User's phone number (optional, default: "")
+- **isPatient:** Boolean flag indicating if user is a patient (default: false)
+
+### UserRelation Model
+- **id:** Unique identifier (ObjectId)
+- **patientId:** Reference to patient User
+- **caretakerId:** Reference to caretaker User
+- **Unique constraint:** Prevents duplicate relationships between same patient-caretaker pair
 
 ## Database Relations
 
@@ -467,11 +553,16 @@ The application manages user relationships through the `UserRelation` model:
    ```
 
 2. **Configure environment variables:**
-   - Fill in your database connection and secrets
+   Create a `.env` file with the following variables:
+   ```env
+   DATABASE_URL="your_mongodb_connection_string"
+   JWT_SECRET="your_jwt_secret_key"
+   SERVICE_ACCOUNT_PATH="./config/firebase_service_account_key.json"
+   ```
 
 3. **Setup Firebase:**
    - Download service account key from Firebase Console
-   - Place in `config/service_account_file.json`
+   - Place in `config/firebase_service_account_key.json`
 
 4. **Initialize database:**
    ```bash
@@ -481,6 +572,11 @@ The application manages user relationships through the `UserRelation` model:
 5. **Run in development:**
    ```bash
    npm run dev
+   ```
+
+6. **Run in production:**
+   ```bash
+   node index.js
    ```
 
 ## File Structure Overview
@@ -500,8 +596,9 @@ The application manages user relationships through the `UserRelation` model:
 │   ├── schema.prisma          # Database schema
 │   └── index.js              # Prisma client setup
 ├── config/
-│   └── service_account_file.json # Firebase service account
+│   └── firebase_service_account_key.json # Firebase service account
 ├── index.js                   # Main server file
+├── package.json              # Dependencies and scripts
 └── .env                      # Environment variables
 ```
 
@@ -514,6 +611,29 @@ You can test the API endpoints using tools like Postman or curl. Make sure to:
 3. **Create relationships** between users for group notifications
 4. **Use proper authentication** headers or request body tokens
 
+### Example API Calls
+
+#### Sign Up
+```bash
+curl -X POST http://localhost:3000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe","email":"john@example.com","password":"password123"}'
+```
+
+#### Login
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"password123"}'
+```
+
+#### Add Patient by Email
+```bash
+curl -X POST http://localhost:3000/api/auth/addpatientbyemail \
+  -H "Content-Type: application/json" \
+  -d '{"userToken":"your_jwt_token","patientEmail":"patient@example.com"}'
+```
+
 ## Production Considerations
 
 - **Environment Variables:** Ensure all secrets are properly configured
@@ -522,3 +642,24 @@ You can test the API endpoints using tools like Postman or curl. Make sure to:
 - **Security:** Implement rate limiting and input validation
 - **Monitoring:** Add logging and error tracking
 - **HTTPS:** Use SSL/TLS in production
+- **CORS:** Configure CORS settings for your frontend domains
+- **Error Logging:** Implement comprehensive error logging and monitoring
+
+## Version History
+
+- **v1.0.0:** Initial release with user authentication, patient-caretaker relationships, and push notifications
+- Added support for email-based user relationships
+- Added user profile updates (age and phone number)
+- Updated dependencies to latest versions
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+ISC License

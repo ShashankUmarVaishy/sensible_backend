@@ -19,6 +19,8 @@ model User {
   password   String
   name       String
   token      String?
+  age        Int?           @default(0)
+  phoneNumber String?      @default("")
   isPatient  Boolean        @default(false)
   patients   UserRelation[] @relation("CaretakerLink")
   caretakers UserRelation[] @relation("PatientLink")
