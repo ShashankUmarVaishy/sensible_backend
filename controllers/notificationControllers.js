@@ -5,16 +5,7 @@ const prisma = new PrismaClient();
 const admin = require("firebase-admin");
 const { Expo } = require('expo-server-sdk');
 const expo = new Expo();
-const serviceAccount= require("../config/firebase_service_account_key.json");
 
-if (serviceAccount && !admin.apps.length) {
-  console.log("making admin initialize app ");
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("credential part done");
-}
 exports.setToken = async (req, res) => {
   try {
     const { userToken, token } = req.body;
@@ -114,8 +105,8 @@ exports.sendNotificationToUser = async (req, res, next) => {
     const ticketChunk = await expo.sendPushNotificationsAsync(messages);
     console.log('Ticket:', ticketChunk);
     //also trying the handker
-    const anotherResponse= await sendNotificationToUserHandler(fcmToken, title, body);
-    console.log('another response:', anotherResponse);
+    // const anotherResponse= await sendNotificationToUserHandler(fcmToken, title, body);
+    // console.log('another response:', anotherResponse);
     return res.send(ticketChunk);
   } 
   catch (err) {
@@ -147,19 +138,7 @@ const sendNotificationToUserHandler = async (fcmToken, title, body) => {
 };
 
 exports.sendNotificationToGroupFromPatient = async (req, res, next) => {
-  //   try {
-  //   const { userToken, title, body } = req.body;
-  //   if (!userToken ||!title ||!body) throw new Error("Please provide user details and notification details");
-  //   const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
-  //   const userId = decoded?.userId;
-  //   if (!userId) throw new Error("Invalid user");
-  //   const user = await prisma.user.findUnique({ where: { id: userId } });
-  //   if (!user) throw new Error("User not found");
-  //   const tokenArray= user.caretakers;
-  //   return sendNotificationToGroupHandler(tokenArray, title, body);
-  // } catch (err) {
-  //   return res.status(500).json({ error: err.message });
-  // }
+
   try {
     const { userToken, title, body } = req.body;
     if (!userToken || !title || !body)
@@ -182,24 +161,42 @@ exports.sendNotificationToGroupFromPatient = async (req, res, next) => {
     });
 
     if (!user) throw new Error("User not found");
-
-    // Extract tokens from caretakers
-    const tokenArray = user.caretakers
+    // Collect all valid tokens
+    const allTokens = user.caretakers
       .map((relation) => relation.caretaker.token)
-      .filter((token) => token); // remove null or undefined tokens
+      .filter((token) => Expo.isExpoPushToken(token));
 
-    if (tokenArray.length === 0) {
-      return res
-        .status(200)
-        .json({ success: false, message: "No valid caretaker tokens found." });
+    if (allTokens.length === 0) {
+      return res.status(200).json({
+        success: false,
+        message: "No valid Expo tokens found for caretakers.",
+      });
+    } 
+    const messages = allTokens.map((token) => ({
+      to: token,
+      sound: 'default',
+      title,
+      body,
+      data: { from: userId },
+    }));
+
+    // Send in chunks
+    const chunks = expo.chunkPushNotifications(messages);
+    
+
+    for (let chunk of chunks) {
+      try {
+         await expo.sendPushNotificationsAsync(chunk);
+      } catch (error) {
+        console.error("Error sending notification chunk:", error);
+      }
     }
 
-    const response = await sendNotificationToGroupHandler(
-      tokenArray,
-      title,
-      body
-    );
-    return res.status(200).json(response);
+    return res.status(200).json({
+      success: true,
+      message: 'Notifications sent to caretakers',
+      
+    });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
